@@ -1,6 +1,6 @@
 # MTH3302: Projet
 
-- Vincent Haney
+- Vincent Haney (2108812)
 - Félix Pelletier
 - Charles-François St-Cyr (275354)
 - Mikael Vaillant
