@@ -1,5 +1,8 @@
 using DataFrames;
 
+#=
+Sépare les lignes données en deux parties selon un ratio
+=#
 function partitionData(data::DataFrame, ratio::Float64)
     n_data = trunc(Int, nrow(data) * ratio)
     n_validate = nrow(data) - n_data
