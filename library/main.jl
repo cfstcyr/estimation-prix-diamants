@@ -4,11 +4,13 @@ using DataFrames;
 Sépare les lignes données en deux parties selon un ratio
 =#
 function partitionData(data::DataFrame, ratio::Float64)
-    n_data = trunc(Int, nrow(data) * ratio)
-    n_validate = nrow(data) - n_data
+    n_train = trunc(Int, nrow(data) * ratio)
 
-    validation = last(data, n_validate)
-    data = first(data, n_data)
+    train_rows = sample(1:nrow(data), n_train, replace=false, ordered=true)
+    valid_rows = setdiff(1:nrow(data), train_rows);
 
-    return (; data, validation)
+    train = data[train_rows, :]
+    valid = data[valid_rows, :]
+
+    return train, valid
 end
