@@ -14,3 +14,42 @@ function partitionData(data::DataFrame, ratio::Float64)
 
     return train, valid
 end
+
+#=
+Obtien le VIF pour une variable spécifiée
+=#
+function getVIF(data::DataFrame, keyVariable::Union{Symbol, String}, variables::Vector{String}) #keyVariable::Union{Symbol, String}
+    formula = term(keyVariable) ~ term(1) + sum(term.(variables))
+    model = lm(formula, data)
+    
+    return 1 / (1 - r2(model))
+end;
+
+#=
+Obtien le VIF pour la combinaisons des variables spécifiées
+=#
+function getAllVIF(data::DataFrame, variables::Vector{String} = [] ; quantitativeVariables::Vector{String}=String[])
+    df = DataFrame(Variable = String[], VIF = Float64[])
+
+    for variable in combinations(variables, 1)
+        push!(df, [variable[], getVIF(data, variable[], [setdiff(variables, variable)..., quantitativeVariables...])])
+    end
+
+    return df
+end;
+
+function getAllVIF(df::DataFrame)
+    return getAllVIF(df, names(df))
+end;
+
+function convertQualitativeToQuantitative(df::DataFrame, variable::Union{Symbol, String})
+    values = Matrix(sort!(unique(select(df, variable)), variable))
+    
+    for value in values[2:end]
+        df[!, "$variable: $value"] = Int.(Matrix(select(df, variable))[:] .== value)
+    end
+end;
+
+function getNamesForQuantitative(df::DataFrame, variable::Union{Symbol, String})
+    filter(name -> match(Regex("$variable: .*"), name) != nothing, names(df))
+end;
