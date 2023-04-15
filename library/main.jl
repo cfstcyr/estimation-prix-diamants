@@ -53,3 +53,7 @@ end;
 function getNamesForQuantitative(df::DataFrame, variable::Union{Symbol, String})
     filter(name -> match(Regex("$variable: .*"), name) != nothing, names(df))
 end;
+function replaceYWithXIfSus(data::DataFrame)
+    data.y[ismissing.(data.y)] = data.x[ismissing.(data.y)]
+    replace!(data.y, data.y.< zeros(size(data.y)) => data.x)
+end
