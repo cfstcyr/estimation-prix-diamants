@@ -1,3 +1,6 @@
+import LinearAlgebra.normalize
+using LinearAlgebra
+
 function normalize(df::DataFrame)
     for col in names(df)
         df[!, col] = (df[!, col] .- mean(df[!, col])) ./ std(df[!, col])
