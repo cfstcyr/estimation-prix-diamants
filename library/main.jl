@@ -1,4 +1,5 @@
 using DataFrames;
+using StatsBase;
 #=
 Sépare les lignes données en deux parties selon un ratio
 =#
@@ -51,6 +52,20 @@ end;
 
 function getNamesForQuantitative(df::DataFrame, variable::Union{Symbol, String})
     filter(name -> match(Regex("$variable: .*"), name) != nothing, names(df))
+end;
+
+function convertQuantitativeToQualitative(df::DataFrame, variable::Union{Symbol, String}, thresholds::Vector{Float64}; new_var::Union{Symbol, String, Missing} = missing, labels::Union{Vector{String}, Missing} = missing)
+    if (ismissing(labels))
+        labels = string.(collect(1:(length(thresholds) - 1)))
+    end
+
+    if (ismissing(new_var))
+        new_var = "$(string(variable))_category"
+    end
+
+    df[!, new_var] .= cut(df[!, variable], thresholds, labels = labels)
+
+    df
 end;
 
 function replaceYWithXIfSus(data::DataFrame)
