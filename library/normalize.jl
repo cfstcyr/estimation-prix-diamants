@@ -1,7 +1,4 @@
-import LinearAlgebra.normalize
-using LinearAlgebra
-
-function normalize(df::DataFrame)
+function standardize(df::DataFrame)
     for col in names(df)
         df[!, col] = (df[!, col] .- mean(df[!, col])) ./ std(df[!, col])
     end
@@ -9,7 +6,7 @@ function normalize(df::DataFrame)
     return df
 end;
 
-function normalize(M::Matrix)
+function standardize(M::Matrix)
     means = mean(M, dims=1)
     stds = std(M, dims=1)
     
@@ -20,6 +17,6 @@ function normalize(M::Matrix)
     return M
 end;
 
-function normalize(v::Vector)
+function standardize(v::Vector)
     return (v .- mean(v)) ./ std(v)
 end;

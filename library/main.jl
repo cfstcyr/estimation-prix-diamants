@@ -43,10 +43,14 @@ function getAllVIF(df::DataFrame)
 end;
 
 function convertQualitativeToQuantitative(df::DataFrame, variable::Union{Symbol, String})
-    values = Matrix(sort!(unique(select(df, variable)), variable))
+    values = collect(skipmissing(sort(unique(train[!, variable]))))
     
     for value in values[2:end]
-        df[!, "$variable: $value"] = Int.(Matrix(select(df, variable))[:] .== value)
+        # C'est tellement laid comme code, but, it works. Don't come for me.
+        df[!, "$variable: $value"] = Matrix(select(df, variable))[:] .== value
+        df[!, "$variable: $value"] = ifelse.(ismissing.(df[!, "$variable: $value"]), -1, df[!, "$variable: $value"])
+        df[!, "$variable: $value"] = Int.(df[!, "$variable: $value"])
+        df[!, "$variable: $value"] = ifelse.(df[!, "$variable: $value"] .== -1, missing, df[!, "$variable: $value"])
     end
 end;
 
@@ -71,4 +75,8 @@ end;
 function replaceYWithXIfSus(data::DataFrame)
     data.y[ismissing.(data.y)] = data.x[ismissing.(data.y)]
     replace!(data.y, data.y.< zeros(size(data.y)) => data.x)
+end
+
+function RMSE(predictions::Vector, values::Vector)
+    return sqrt(mean((predictions .- values).^2))
 end
