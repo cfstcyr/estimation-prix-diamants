@@ -20,3 +20,13 @@ end;
 function standardize(v::Vector)
     return (v .- mean(v)) ./ std(v)
 end;
+
+function excludeMissingOrZero(df::DataFrame, zeroCheckColumns::Vector; precision::Float64 = 0.05)
+    df = df[completecases(df), :]
+
+    for col in zeroCheckColumns
+        df = df[df[:, col] .> precision, :]
+    end
+
+    return df
+end
