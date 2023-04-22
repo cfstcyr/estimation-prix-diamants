@@ -14,7 +14,7 @@ end
 
 function replaceValuesNaive(df::DataFrame)
     df.y = ifelse.(ismissing.(df.y) .|| df.y .< 0.05, df.x, df.y)
-    df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .* df.y), df.depth)
+    df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .+ df.y) .* 100, df.depth)
 
     cutMode = mode(dropmissing(df, :cut).cut)
     replace!(df.cut, missing => cutMode)
@@ -25,7 +25,7 @@ function replaceValuesRegression(df::DataFrame)
     predic_y = predict(M_y, df)
 
     df.y = ifelse.(ismissing.(df.y) .|| df.y .< 0.05, predic_y, df.y)
-    df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .* df.y), df.depth)
+    df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .+ df.y) .* 100, df.depth)
 
     columns = ["cut: Good", "cut: Ideal", "cut: Premium", "cut: Very Good"]
 
