@@ -84,20 +84,22 @@ function standardize(df::DataFrame)
     return df
 end;
 
-function generateKNNModels(weight::Vector, models::Vector = [], minkowski::Vector = [])
+function generateKNNModels(weight::Vector, training_matrix, models::Vector = [], minkowski::Vector = [])
     models_dict = Dict();
     if length(models) > 0
+        print("loop")
+        print(length(models))
         for model in Models
             if model == "Euclidean"
-                models_dict["euclidean_model"] = KDTree(Mat_train, WeightedEuclidean(weight));
+                models_dict["euclidean_model"] = KDTree(training_matrix, WeightedEuclidean(weight));
             end
             if model == "Cityblock"
-                models_dict["cityblock_model"] = KDTree(Mat_train, WeightedCityblock(weight));
+                models_dict["cityblock_model"] = KDTree(training_matrix, WeightedCityblock(weight));
             end
             if model == "Minkowski"
                 if length(minkowski) > 0
                     for k in minkowski
-                        models_dict["minkowski_$(k)_model"] = KDTree(Mat_train, WeightedMinkowski(weight, k));
+                        models_dict["minkowski_$(k)_model"] = KDTree(training_matrix, WeightedMinkowski(weight, k));
                     end
                 else
                     throw(ArgumentError("Minkowski vector required to run Minkowski models"));
@@ -105,12 +107,13 @@ function generateKNNModels(weight::Vector, models::Vector = [], minkowski::Vecto
             end
         end
     else
+        print("loop skipped")
         models_dict =  Dict(
-            "euclidean_model" => KDTree(Mat_train, WeightedEuclidean(weight)),
-            "cityblock_model" => KDTree(Mat_train, WeightedCityblock(weight)),
-            "minkowski_0.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.5)),
-            "minkowski_0.75_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.75)),
-            "minkowski_1.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 1.5)),
+            "euclidean_model" => KDTree(training_matrix, WeightedEuclidean(weight)),
+            "cityblock_model" => KDTree(training_matrix, WeightedCityblock(weight)),
+            "minkowski_0.5_model" => KDTree(training_matrix, WeightedMinkowski(weight, 0.5)),
+            "minkowski_0.75_model" => KDTree(training_matrix, WeightedMinkowski(weight, 0.75)),
+            "minkowski_1.5_model" => KDTree(training_matrix, WeightedMinkowski(weight, 1.5)),
             )
     end
     return models_dict
