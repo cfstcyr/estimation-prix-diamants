@@ -20,19 +20,21 @@ function replaceValuesNaive(df::DataFrame)
     replace!(df.cut, missing => cutMode)
 end
 
-function replaceValuesRegression(df::DataFrame)
+function replaceValuesRegression(df::DataFrame; ignoreCut = false)
     M_y = lm(@formula(y ~ x + table), df)
     predic_y = predict(M_y, df)
 
     df.y = ifelse.(ismissing.(df.y) .|| df.y .< 0.05, predic_y, df.y)
     df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .+ df.y) .* 100, df.depth)
 
-    columns = ["cut: Good", "cut: Ideal", "cut: Premium", "cut: Very Good"]
+    if ignoreCut == false
+        columns = ["cut: Good", "cut: Ideal", "cut: Premium", "cut: Very Good"]
 
-    for col in columns
-        M = lm(term(col) ~ term(:color) + term(:clarity) + term(:x), df)
-        predictions = predict(M, df)
+        for col in columns
+            M = lm(term(col) ~ term(:color) + term(:clarity) + term(:x), df)
+            predictions = predict(M, df)
 
-        df[!, col] = ifelse.(ismissing.(df[!, col]), predictions, df[!, col])
+            df[!, col] = ifelse.(ismissing.(df[!, col]), predictions, df[!, col])
+        end
     end
 end
