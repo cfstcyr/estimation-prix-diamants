@@ -27,7 +27,7 @@ function replaceValuesRegression(df::DataFrame; ignoreCut = false)
     df.y = ifelse.(ismissing.(df.y) .|| df.y .< 0.05, predic_y, df.y)
     df.depth = ifelse.(ismissing.(df.depth) .|| df.depth .< 0.05, 2 .* df.z ./ (df.x .+ df.y) .* 100, df.depth)
 
-    if ignoreCut == false
+    if !ignoreCut
         columns = ["cut: Good", "cut: Ideal", "cut: Premium", "cut: Very Good"]
 
         for col in columns
@@ -37,4 +37,9 @@ function replaceValuesRegression(df::DataFrame; ignoreCut = false)
             df[!, col] = ifelse.(ismissing.(df[!, col]), predictions, df[!, col])
         end
     end
+end
+
+function replaceYWithXIfSus(data::DataFrame)
+    data.y[ismissing.(data.y)] = data.x[ismissing.(data.y)]
+    replace!(data.y, data.y.< zeros(size(data.y)) => data.x)
 end

@@ -43,7 +43,7 @@ function getAllVIF(df::DataFrame)
 end;
 
 function convertQualitativeToQuantitative(df::DataFrame, variable::Union{Symbol, String})
-    values = collect(skipmissing(sort(unique(train[!, variable]))))
+    values = collect(skipmissing(sort(unique(df[!, variable]))))
     
     for value in values[2:end]
         # C'est tellement laid comme code, but, it works. Don't come for me.
@@ -72,11 +72,25 @@ function convertQuantitativeToQualitative(df::DataFrame, variable::Union{Symbol,
     df
 end;
 
-function replaceYWithXIfSus(data::DataFrame)
-    data.y[ismissing.(data.y)] = data.x[ismissing.(data.y)]
-    replace!(data.y, data.y.< zeros(size(data.y)) => data.x)
-end
-
 function RMSE(predictions::Vector, values::Vector)
     return sqrt(mean((predictions .- values).^2))
+end
+
+function standardize(df::DataFrame)
+    for col in names(df)
+        df[!, col] = (df[!, col] .- mean(df[!, col])) ./ std(df[!, col])
+    end
+    
+    return df
+end;
+
+function generateKNNModels(weight::Vector)
+    return Dict(
+        "kdtree_euclidean_model" => KDTree(Mat_train, WeightedEuclidean(weight)),
+        "cityblock_model" => KDTree(Mat_train, WeightedCityblock(weight)),
+        "minkowski_0.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.5)),
+        "minkowski_0.75_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.75)),
+        "minkowski_1.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 1.5)),
+        "minkowski_2.0_model" => KDTree(Mat_train, WeightedMinkowski(weight, 2.0)),
+    )
 end
