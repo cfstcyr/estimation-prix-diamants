@@ -84,13 +84,64 @@ function standardize(df::DataFrame)
     return df
 end;
 
-function generateKNNModels(weight::Vector)
-    return Dict(
-        "kdtree_euclidean_model" => KDTree(Mat_train, WeightedEuclidean(weight)),
-        "cityblock_model" => KDTree(Mat_train, WeightedCityblock(weight)),
-        "minkowski_0.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.5)),
-        "minkowski_0.75_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.75)),
-        "minkowski_1.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 1.5)),
-        "minkowski_2.0_model" => KDTree(Mat_train, WeightedMinkowski(weight, 2.0)),
-    )
+function generateKNNModels(weight::Vector, models::Vector = [], minkowski::Vector = [])
+    models_dict = Dict();
+    if length(models) > 0
+        for model in Models
+            if model == "Euclidean"
+                models_dict["euclidean_model"] = KDTree(Mat_train, WeightedEuclidean(weight));
+            end
+            if model == "Cityblock"
+                models_dict["cityblock_model"] = KDTree(Mat_train, WeightedCityblock(weight));
+            end
+            if model == "Minkowski"
+                if length(minkowski) > 0
+                    for k in minkowski
+                        models_dict["minkowski_$(k)_model"] = KDTree(Mat_train, WeightedMinkowski(weight, k));
+                    end
+                else
+                    throw(ArgumentError("Minkowski vector required to run Minkowski models"));
+                end
+            end
+        end
+    else
+        models_dict =  Dict(
+            "euclidean_model" => KDTree(Mat_train, WeightedEuclidean(weight)),
+            "cityblock_model" => KDTree(Mat_train, WeightedCityblock(weight)),
+            "minkowski_0.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.5)),
+            "minkowski_0.75_model" => KDTree(Mat_train, WeightedMinkowski(weight, 0.75)),
+            "minkowski_1.5_model" => KDTree(Mat_train, WeightedMinkowski(weight, 1.5)),
+            )
+    end
+    return models_dict
+end;
+
+function matrixify(data, exclusion::Vector{String})
+    return Matrix(
+        standardize(
+            select(
+                data,
+                Not(exclusion),
+            )
+        )
+    );
+end
+
+function test_models(training_data, validation_data, validation_matrix, models, k_vector)
+    for k in k_vector
+        println("k-neighbours: $(k)")
+        for (key, value) in models
+
+            idxs, dists = knn(value, validation_matrix, k, true)
+
+            prediction = [
+                dot(training_data.price[idxs[i]], dists[i]) / sum(dists[i])
+                for i in 1:size(idxs, 1)
+            ]
+
+            rmse = RMSE(prediction, validation_data.price)
+
+            println("\t RMSE $(key): $(round(rmse))")
+        end
+    end
 end
