@@ -30,3 +30,14 @@ function excludeMissingOrZero(df::DataFrame, zeroCheckColumns::Vector; precision
 
     return df
 end
+
+function matrixify(data::DataFrame, exclusion::Vector{String})
+    return Matrix(
+            standardize(
+                select(
+                    data,
+                    Not(exclusion),
+                )
+            )
+        );
+end
