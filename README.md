@@ -1,8 +1,8 @@
-# MTH3302: Projet
+# Estimation du prix de diamants
 
-- Vincent Haney (2108812)
+- Vincent Haney
 - Félix Pelletier
-- Charles-François St-Cyr (275354)
+- Charles-François St-Cyr
 - Mikael Vaillant
 
 ## Description
